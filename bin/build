@@ -1,0 +1,39 @@
+# Usage info
+build(){
+	export GOPATH=$(pwd)
+		export GOOS=linux
+		export GOARCH=arm
+		go build -o ./build/$1 $1.go
+		echo ./build/$1
+}
+show_help() {
+	cat << EOF
+		Usage: ${0##*/} [-hd] [FILE]...
+		Build FILE and write the binary to ./build
+
+		-h          display this help and exit
+		-d 			deploy the binary to connected bbb over scp
+EOF
+}
+program=$1
+
+OPTIND=1 # Reset is necessary if getopts was used previously in the script.  It is a good idea to make this local in a function.
+while getopts "hd:" opt; do
+	case "$opt" in
+		h)
+			show_help
+			exit 0
+			;;
+		d)
+			build $program | ./bin/deploy
+			exit 0
+			;;
+		'?')
+			show_help >&2
+			exit 1
+			;;
+		esac
+done
+
+build $program
+
